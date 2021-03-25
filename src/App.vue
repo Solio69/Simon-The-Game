@@ -29,16 +29,15 @@
         <div @click="startGame"><button>Start</button></div>
         <div>
           <div>
-            <input type="radio" value="easy" />
+            <input type="radio" value="easy" v-model="difficultyLevel" />
             <label>Легкий</label>
           </div>
-
           <div>
-            <input type="radio" value="normal" />
+            <input type="radio" value="medium" v-model="difficultyLevel" />
             <label>Нормальный</label>
           </div>
           <div>
-            <input type="radio" value="hard" />
+            <input type="radio" value="hard" v-model="difficultyLevel" />
             <label>Сложный</label>
           </div>
         </div>
@@ -59,34 +58,37 @@ export default {
       elements: {
         blue: {
           id: 1,
-          sound: "",
+          sound: "1",
           isActive: false,
         },
         red: {
           id: 2,
-          sound: "",
+          sound: "2",
           isActive: false,
         },
         yellow: {
           id: 3,
-          sound: "",
+          sound: "3",
           isActive: false,
         },
         green: {
           id: 4,
-          sound: "",
+          sound: "4",
           isActive: false,
         },
       },
+      difficultyLevel: "easy",
+      lavelInterval: 1500,
       randomSelected: [], // выбранные рандомно элементы
       itemsSelected: [], // выбранные пользователем элементы
       roundCounter: 1, // счетчик раундов
     };
   },
   methods: {
-    // подсветка элемента
+    // подсветка элемента и озвучивание элемента
     elementHighlight(e) {
       e.isActive = true;
+      this.sounding(e.sound); // озвучивание
       setTimeout(function() {
         e.isActive = false;
       }, 300);
@@ -98,23 +100,25 @@ export default {
       this.itemsSelected.push(elem.id);
       // console.log(this.itemsSelected);
     },
-    // рекурсивный запуск ф-и randomElems с интервалом времени в зависимости от сложности
-    recRandomElems(interval) {
+    // рекурсивный запуск ф-ию game с интервалом времени в зависимости от сложности
+    recGame(interval) {
       setTimeout(() => {
-        this.randomElems();
+        this.game();
         return;
       }, interval);
     },
-
+    sounding(src) {
+      let audio = new Audio(require(`../src/assets/sounds/sound_${src}.mp3`));
+      audio.play();
+    },
     // формирует массив рандомных значений и сравнивает со значениями введенными пользователем
-    randomElems() {
+    game() {
       let randomElem;
       // генерирует рандомный элемент
       let randomNum = Math.floor(
         Math.random() * (Math.floor(5) - Math.ceil(1)) + Math.ceil(1)
       );
       // console.log(randomNum);
-
       switch (randomNum) {
         case 1:
           randomElem = this.elements.blue;
@@ -130,8 +134,10 @@ export default {
           break;
       }
       // console.log(randomElem);
+
       // подсвечивает рандомный элемент
       this.elementHighlight(randomElem);
+
       //пушит его в массив рандомных элементов
       this.randomSelected.push(randomElem.id);
       // console.log(this.randomSelected);
@@ -139,7 +145,7 @@ export default {
       // проверяет достаточно ли элементов в массиве исходя из раунда
       if (this.randomSelected.length < this.roundCounter) {
         // если нет, то запускает ф-ю рекурсивно
-        this.recRandomElems(1500);
+        this.recGame(this.lavelInterval);
       } else {
         // если достаточно, то дает пользлвателю 3сек + по 0.5сек закажды раунд для повтора
         setTimeout(() => {
@@ -157,7 +163,7 @@ export default {
             // раунд увеличивается
             this.roundCounter++;
             // ф-я запускается рекурсивно
-            this.recRandomElems(1500);
+            this.recGame(this.lavelInterval);
           } else {
             // если пользователь не успел или ошибся (массивы не идентичны)
             console.log("ошибка"); // то ошибка
@@ -172,7 +178,21 @@ export default {
 
     // запускает игру по клику
     startGame() {
-      this.randomElems();
+      // устанавливает уроверь сложности
+      switch (this.difficultyLevel) {
+        case "easy":
+          this.lavelInterval = 1500;
+          break;
+        case "medium":
+          this.lavelInterval = 1000;
+          break;
+        case "hard":
+          this.lavelInterval = 400;
+          break;
+      }
+      console.log(this.lavelInterval);
+
+      this.game();
     },
   },
 };
