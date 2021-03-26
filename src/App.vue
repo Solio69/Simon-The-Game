@@ -1,44 +1,55 @@
 <template>
   <div id="app">
-    <h1 class="game_title">Simon The Game</h1>
-    <div class="container">
-      <div class="game__content">
+    <div class="game_wrapper">
+      <div v-if="!gameOver" class="game_title title_title">
+        Simon The Game
+      </div>
+
+      <div v-else class="game_title title_game-over">
+        Game Over :-((
+      </div>
+
+      <div class="game_field">
         <div
-          class="game__item game__item_1"
+          class="game_field-item item_1"
           @click.prevent="itemPressed(elements.blue)"
           :class="{ activeClass: elements.blue.isActive }"
         ></div>
         <div
-          class="game__item game__item_2"
+          class="game_field-item item_2"
           @click.prevent="itemPressed(elements.red)"
           :class="{ activeClass: elements.red.isActive }"
         ></div>
         <div
-          class="game__item game__item_3"
+          class="game_field-item item_3"
           @click.prevent="itemPressed(elements.yellow)"
           :class="{ activeClass: elements.yellow.isActive }"
         ></div>
         <div
-          class="game__item game__item_4"
+          class="game_field-item item_4"
           @click.prevent="itemPressed(elements.green)"
           :class="{ activeClass: elements.green.isActive }"
         ></div>
       </div>
-      <div>
-        <div>Раунд: {{ roundCounter }}</div>
-        <div @click="startGame"><button>Start</button></div>
-        <div>
-          <div>
+      <div class="game_info">
+        <div class="game_info_item info_item-title">
+          Round: <span>{{ roundCounter }}</span>
+        </div>
+        <div class="game_info_item " @click="startGame">
+          <button class="info_item-btn">Start</button>
+        </div>
+        <div class="game_info_item">
+          <div class="game_info_item-level">
             <input type="radio" value="easy" v-model="difficultyLevel" />
-            <label>Легкий</label>
+            <label>Easy</label>
           </div>
-          <div>
+          <div class="game_info_item-level">
             <input type="radio" value="medium" v-model="difficultyLevel" />
-            <label>Нормальный</label>
+            <label>Medium</label>
           </div>
-          <div>
+          <div class="game_info_item-level">
             <input type="radio" value="hard" v-model="difficultyLevel" />
-            <label>Сложный</label>
+            <label>Hard</label>
           </div>
         </div>
       </div>
@@ -82,6 +93,7 @@ export default {
       randomSelected: [], // выбранные рандомно элементы
       itemsSelected: [], // выбранные пользователем элементы
       roundCounter: 1, // счетчик раундов
+      gameOver: false,
     };
   },
   methods: {
@@ -94,7 +106,7 @@ export default {
       }, 300);
     },
 
-    // подсвечивает выбранный элемент по клику и добавляет его id в масиив элементов выбранных пользователем
+    // подсвечивает выбранный пользователем элемент по клику и добавляет его id в масиив элементов выбранных пользователем
     itemPressed(elem) {
       this.elementHighlight(elem);
       this.itemsSelected.push(elem.id);
@@ -107,10 +119,12 @@ export default {
         return;
       }, interval);
     },
+    // озучивает клик
     sounding(src) {
       let audio = new Audio(require(`../src/assets/sounds/sound_${src}.mp3`));
       audio.play();
     },
+
     // формирует массив рандомных значений и сравнивает со значениями введенными пользователем
     game() {
       let randomElem;
@@ -150,8 +164,8 @@ export default {
         // если достаточно, то дает пользлвателю 3сек + по 0.5сек закажды раунд для повтора
         setTimeout(() => {
           // выводит оба масссива в консоль
-          console.log(this.randomSelected);
-          console.log(this.itemsSelected);
+          console.log(JSON.stringify(this.randomSelected));
+          console.log(JSON.stringify(this.itemsSelected));
           if (
             // если введенные пользоватлем значения совпадают с рандомными
             JSON.stringify(this.randomSelected) ===
@@ -170,6 +184,7 @@ export default {
             this.randomSelected = [];
             this.itemsSelected = [];
             this.roundCounter = 1; // и обновленеи счетчика
+            this.gameOver = true;
             return;
           }
         }, 3000 + 500 * this.roundCounter);
@@ -178,6 +193,7 @@ export default {
 
     // запускает игру по клику
     startGame() {
+      this.gameOver = false;
       // устанавливает уроверь сложности
       switch (this.difficultyLevel) {
         case "easy":
@@ -199,15 +215,35 @@ export default {
 </script>
 
 <style>
+* {
+  padding: 0;
+  margin: 0;
+}
 .game_title {
   text-align: center;
+  margin-bottom: 15px;
+
+  font-size: 25px;
+  font-weight: 700;
+
+  width: 250px;
+  margin-top: 10px;
+  border: 1px solid;
+  border-radius: 8px;
 }
-.container {
+.title_title {
+  background-color: rgba(197, 228, 87, 0.836);
+}
+.title_game-over {
+  background-color: rgb(228, 95, 122);
+}
+
+.game_wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
-.game__content {
+.game_field {
   width: 300px;
   height: 300px;
   border-radius: 50%;
@@ -215,26 +251,26 @@ export default {
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
 }
-.game__item {
+.game_field-item {
   cursor: pointer;
 }
 
-.game__item_1 {
+.item_1 {
   background-color: rgb(71, 71, 216);
   border-top-left-radius: 100%;
   opacity: 0.6;
 }
-.game__item_2 {
+.item_2 {
   background-color: #f01c1c;
   border-top-right-radius: 100%;
   opacity: 0.6;
 }
-.game__item_3 {
+.item_3 {
   background-color: #f3f313;
   border-bottom-left-radius: 100%;
   opacity: 0.6;
 }
-.game__item_4 {
+.item_4 {
   background-color: #41e70f;
   border-bottom-right-radius: 100%;
   opacity: 0.6;
@@ -242,5 +278,44 @@ export default {
 .activeClass {
   border: 2px solid #0d0e0d;
   opacity: 1;
+}
+.game_info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.game_info_item {
+  padding-top: 8px;
+}
+.info_item-title {
+  font-size: 18px;
+  font-weight: 700;
+}
+.info_item-title span {
+  color: rgb(238, 54, 91);
+  font-size: 25px;
+}
+.info_item-btn {
+  background-color: rgb(228, 95, 122);
+  height: 30px;
+  width: 80px;
+  border: 1px solid;
+  border-radius: 8px;
+  font-weight: 700;
+  color: beige;
+}
+.info_item-btn:hover {
+  cursor: pointer;
+  background-color: rgb(238, 54, 91);
+}
+.info_item-btn:focus {
+  outline: none;
+}
+.game_info_item-level {
+  padding-top: 3px;
+  font-weight: 500;
+}
+.game_info_item-level label {
+  padding-left: 9px;
 }
 </style>
